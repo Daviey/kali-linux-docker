@@ -1,16 +1,20 @@
+#FROM kalilinux/kali-linux-docker
 FROM kalilinux/kali-linux-docker
+
 # Metadata params
 ARG BUILD_DATE
 ARG VERSION
 ARG VCS_URL
 ARG VCS_REF
 
+WORKDIR /root
+
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url=$VCS_URL \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.version=$VERSION \
       org.label-schema.name='Kali Linux' \
-      org.label-schema.description='Official Kali Linux docker image' \
+      org.label-schema.description='Daviey Kali Linux docker image' \
       org.label-schema.usage='https://www.kali.org/news/official-kali-linux-docker-images/' \
       org.label-schema.url='https://www.kali.org/' \
       org.label-schema.vendor='Offensive Security' \
@@ -20,12 +24,24 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.docker.debug='docker logs $CONTAINER' \
       io.github.offensive-security.docker.dockerfile="Dockerfile" \
       io.github.offensive-security.license="GPLv3" \
-      MAINTAINER="Steev Klimaszewski <steev@kali.org>"
+      MAINTAINER="Dave (Daviey) Walker <email@daviey.com>"
+
 RUN echo "deb http://http.kali.org/kali kali-rolling main contrib non-free" > /etc/apt/sources.list && \
     echo "deb-src http://http.kali.org/kali kali-rolling main contrib non-free" >> /etc/apt/sources.list
+
 ENV DEBIAN_FRONTEND noninteractive
 RUN set -x \
     && apt-get -yqq update \
     && apt-get -yqq dist-upgrade \
     && apt-get clean
-CMD ["bash"]
+
+# Add i386 multi-arch
+RUN dpkg --add-architecture i386 && \
+  apt-get update && \
+  apt-get install -y libc6:i386 &&\
+  apt-get clean
+
+# Final upgrade
+RUN apt-get -y update && apt-get -y dist-upgrade && apt-get clean
+
+CMD ["/bin/bash"]
